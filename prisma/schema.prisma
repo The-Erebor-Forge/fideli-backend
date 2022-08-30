@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,112 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model addresses {
+  cep              String           @id @db.VarChar(10)
+  street           String?          @db.VarChar(100)
+  district         String?          @db.VarChar(100)
+  city_ibge_code   String           @db.VarChar(30)
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  address_city     addresses_cities @relation(fields: [city_ibge_code], references: [ibge_code], map: "fk_address_city")
+  client           clients[]
+  company          companies[]
+}
+
+model addresses_cities {
+  ibge_code        String           @id @db.VarChar(30)
+  name             String           @db.VarChar(100)
+  state_id         Int
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  address_state    addresses_states @relation(fields: [state_id], references: [id], map: "fk_state_city")
+  address          addresses[]
+  client           clients[]
+  company          companies[]
+}
+
+model addresses_states {
+  id               Int                @id
+  name             String             @db.VarChar(100)
+  initials         String             @db.VarChar(3)
+  created_at       DateTime?          @db.Timestamp(0)
+  updated_at       DateTime?          @db.Timestamp(0)
+  address_city     addresses_cities[]
+}
+
+model clients {
+  id                         Int              @id @default(autoincrement())
+  active                     Int
+  cpf_cnpj                   String           @db.VarChar(15)
+  phone                      String           @db.VarChar(30)
+  email                      String           @db.VarChar(100)
+  password                   String           @db.VarChar(100)
+  photo                      Bytes?
+  fidelity_points            Int?
+  addresses_cep              String           @db.VarChar(10)
+  address_street             String?          @db.VarChar(100)
+  address_no                 String?          @db.VarChar(10)
+  address_district           String?          @db.VarChar(100)
+  addresses_cities_ibge_code String           @db.VarChar(30)
+  created_at                 DateTime         @db.Timestamp(0)
+  updated_at                 DateTime         @db.Timestamp(0)
+  address                    addresses        @relation(fields: [addresses_cep], references: [cep], map: "fk_client_cep")
+  address_city               addresses_cities @relation(fields: [addresses_cities_ibge_code], references: [ibge_code], map: "fk_client_city")
+  entry                      entries[]
+}
+
+model companies {
+  id                     Int               @id @default(autoincrement())
+  active                 Int
+  cpf_cnpj               String            @db.VarChar(15)
+  corporate_name         String            @db.VarChar(200)
+  trade_name             String            @db.VarChar(200)
+  address_cep            String            @db.VarChar(10)
+  address_street         String?           @db.VarChar(100)
+  address_no             String?           @db.VarChar(10)
+  address_district       String?           @db.VarChar(100)
+  address_city_ibge_code String            @db.VarChar(30)
+  created_at             DateTime          @db.Timestamp(0)
+  updated_at             DateTime          @db.Timestamp(0)
+  address                addresses         @relation(fields: [address_cep], references: [cep], map: "fk_company_cep")
+  address_city           addresses_cities  @relation(fields: [address_city_ibge_code], references: [ibge_code], map: "fk_company_city")
+  entry                  entries[]
+  user_company           users_companies[]
+}
+
+model entries {
+  id            Int       @id @default(autoincrement())
+  company_id    Int
+  client_id     Int
+  amount_points Int
+  date          DateTime  @db.Date
+  valid_until   DateTime  @db.Date
+  created_at    DateTime  @db.Timestamp(0)
+  updated_at    DateTime  @db.Timestamp(0)
+  client        clients   @relation(fields: [client_id], references: [id], map: "fk_entry_client")
+  company       companies @relation(fields: [company_id], references: [id], map: "fk_entry_company")
+}
+
+model users {
+  id              Int               @id @default(autoincrement())
+  active          Int
+  name            String            @db.VarChar(100)
+  email           String            @db.VarChar(100)
+  password        String            @db.VarChar(100)
+  created_at      DateTime          @db.Timestamp(0)
+  updated_at      DateTime          @db.Timestamp(0)
+  user_company    users_companies[]
+}
+
+model users_companies {
+  id           Int       @id @default(autoincrement())
+  companies_id Int
+  users_id     Int
+  active       Int
+  created_at   DateTime  @db.Timestamp(0)
+  updated_at   DateTime  @db.Timestamp(0)
+  company      companies @relation(fields: [companies_id], references: [id], map: "fk_company_user")
+  user         users     @relation(fields: [users_id], references: [id], map: "fk_user_company")
 }
