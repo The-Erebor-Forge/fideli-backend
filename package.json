@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^4.3.0",
+    "@prisma/client": "^4.2.1",
     "fastify": "^4.5.3",
     "prisma": "^4.2.1"
   }
