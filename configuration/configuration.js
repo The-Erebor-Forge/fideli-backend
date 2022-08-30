@@ -15,4 +15,5 @@ module.exports = {
   serverPort: loadEnvironmentVariable("SERVER_PORT"),
   serverJwtSecret: loadEnvironmentVariable("SERVER_JWT_SECRET"),
   serverCryptoKey: loadEnvironmentVariable("SERVER_CRYPTO_KEY"),
+  debugMode: loadEnvironmentVariable("DEBUG_MODE"),
 };
